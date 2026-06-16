@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Versuch F3 – Fadenstrahlrohr</title>
+<style>
+  :root{
+    --bg:#0b0e17;
+    --panel:#141925;
+    --panel-2:#1c2333;
+    --ink:#e9edf6;
+    --muted:#8b96ad;
+    --line:#2a3346;
+    --accent:#6ea8fe;
+    --beam:#46e0ff;
+    --beam-glow:#7af0ff;
+    --coil:#c0512f;
+    --coil-2:#e08050;
+    --gold:#e8b647;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:15px;
+    line-height:1.5;
+  }
+  .wrap{
+    max-width:980px;
+    margin:0 auto;
+    padding:22px 20px 30px;
+  }
+  header{
+    border-bottom:1px solid var(--line);
+    padding-bottom:14px;
+    margin-bottom:18px;
+  }
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:600;
+  }
+  h1{
+    font-size:23px;
+    margin:5px 0 2px;
+    font-weight:650;
+    letter-spacing:-.01em;
+  }
+  .sub{color:var(--muted);font-size:13px;}
+  .layout{
+    display:grid;
+    grid-template-columns:1fr 290px;
+    gap:18px;
+    align-items:start;
+  }
+  @media (max-width:780px){
+    .layout{grid-template-columns:1fr;}
+  }
+  .stage{
+    background:radial-gradient(120% 120% at 50% 30%, #10182a 0%, #0a0d15 75%);
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
+    position:relative;
+  }
+  svg{display:block;width:100%;height:auto;}
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+  }
+  .panel h2{
+    font-size:12px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 14px;
+    font-weight:600;
+  }
+  .ctrl{margin-bottom:18px;}
+  .ctrl:last-child{margin-bottom:4px;}
+  .ctrl-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:7px;
+  }
+  .ctrl-label{font-size:13px;color:var(--ink);font-weight:500;}
+  .ctrl-val{
+    font-variant-numeric:tabular-nums;
+    font-size:13px;
+    color:var(--accent);
+    font-weight:600;
+  }
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;
+    width:100%;height:4px;border-radius:4px;
+    background:var(--panel-2);
+    outline:none;cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;
+    width:16px;height:16px;border-radius:50%;
+    background:var(--accent);
+    border:2px solid var(--bg);
+    box-shadow:0 0 0 1px var(--accent);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;
+    background:var(--accent);border:2px solid var(--bg);
+  }
+  .radii{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:6px;
+    margin-top:8px;
+  }
+  .radii button{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--muted);
+    border-radius:8px;
+    padding:7px 0;
+    font-size:12px;
+    cursor:pointer;
+    font-variant-numeric:tabular-nums;
+    transition:all .12s;
+  }
+  .radii button:hover{border-color:var(--accent);color:var(--ink);}
+  .radii button.active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#06101f;
+    font-weight:600;
+  }
+  .readout{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+    margin-top:18px;
+  }
+  .result-main{
+    text-align:center;
+    padding:6px 0 14px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:14px;
+  }
+  .result-main .num{
+    font-size:30px;
+    font-weight:650;
+    color:var(--gold);
+    font-variant-numeric:tabular-nums;
+    letter-spacing:-.01em;
+  }
+  .result-main .unit{font-size:14px;color:var(--muted);}
+  .result-main .name{font-size:12px;color:var(--muted);margin-top:3px;}
+  .rows{display:grid;gap:9px;}
+  .row{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+  }
+  .row .k{color:var(--muted);}
+  .row .v{font-variant-numeric:tabular-nums;font-weight:500;}
+  .dev{
+    margin-top:14px;
+    padding-top:12px;
+    border-top:1px solid var(--line);
+    font-size:12px;
+    color:var(--muted);
+    text-align:center;
+  }
+  .dev b{color:var(--ink);}
+  .legend{
+    display:flex;gap:16px;flex-wrap:wrap;
+    padding:11px 16px;
+    border-top:1px solid var(--line);
+    font-size:12px;
+    color:var(--muted);
+    background:var(--panel);
+  }
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .foot{
+    margin-top:20px;
+    padding-top:12px;
+    border-top:1px solid var(--line);
+    font-size:11.5px;
+    color:var(--muted);
+  }
+  .foot code{
+    background:var(--panel-2);
+    padding:1px 6px;border-radius:5px;
+    font-size:11px;color:var(--accent);
+  }
+  .beam-path{
+    filter:drop-shadow(0 0 4px var(--beam-glow));
+  }
+  .autobtn{
+    width:100%;
+    background:var(--accent);
+    color:#06101f;
+    border:none;
+    border-radius:9px;
+    padding:10px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    margin-bottom:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    transition:background .15s;
+    font-family:inherit;
+  }
+  .autobtn:hover{background:#85b6ff;}
+  .autobtn.paused{
+    background:var(--panel-2);
+    color:var(--accent);
+    border:1px solid var(--accent);
+  }
+  .phase-tag{
+    text-align:center;
+    font-size:11px;
+    color:var(--muted);
+    margin-bottom:14px;
+    min-height:15px;
+    transition:opacity .3s;
+  }
+  .phase-tag b{color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Hochschule Zittau/Görlitz · Fakultät N · FG Physik</div>
+    <h1>Versuch F3 — Spezifische Ladung des Elektrons</h1>
+    <div class="sub">Fadenstrahlrohr im Magnetfeld zweier Helmholtzspulen · interaktive Simulation</div>
+  </header>
+
+  <div class="layout">
+    <div>
+      <div class="stage">
+        <svg viewBox="0 0 560 440" id="scene" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="bulb" cx="50%" cy="45%" r="60%">
+              <stop offset="0%" stop-color="#1a2640" stop-opacity="0.9"/>
+              <stop offset="70%" stop-color="#0d1422" stop-opacity="0.5"/>
+              <stop offset="100%" stop-color="#0d1422" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="coilGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#d4663f"/>
+              <stop offset="100%" stop-color="#a23f22"/>
+            </linearGradient>
+            <radialGradient id="cathodeGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ffb347" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#ffb347" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- glass bulb glow -->
+          <circle cx="280" cy="210" r="180" fill="url(#bulb)"/>
+
+          <!-- ===== Helmholtz: ZWEI Spulen im Abstand = Radius ===== -->
+          <!-- hintere Hälften beider Spulen (hinter Glaskugel) -->
+          <!-- linke Spule, hintere Hälfte -->
+          <path d="M 200 42 A 52 168 0 0 0 200 378" fill="none" stroke="#7a2f18" stroke-width="13" opacity="0.5"/>
+          <path d="M 200 42 A 52 168 0 0 0 200 378" fill="none" stroke="url(#coilGrad)" stroke-width="9" opacity="0.5"/>
+          <!-- rechte Spule, hintere Hälfte -->
+          <path d="M 360 42 A 52 168 0 0 0 360 378" fill="none" stroke="#7a2f18" stroke-width="13" opacity="0.5"/>
+          <path d="M 360 42 A 52 168 0 0 0 360 378" fill="none" stroke="url(#coilGrad)" stroke-width="9" opacity="0.5"/>
+
+          <!-- homogener Feldbereich (Andeutung) zwischen den Spulen -->
+          <rect id="homogen" x="200" y="78" width="160" height="264" fill="var(--coil)" opacity="0.04" rx="10"/>
+
+          <!-- glass sphere -->
+          <circle cx="280" cy="210" r="150" fill="#0e1830" fill-opacity="0.35" stroke="#3a4760" />
+          <circle cx="280" cy="210" r="150" fill="none" stroke="#4a5a78" stroke-width="2" stroke-opacity="0.35" id="glass"/>
+
+          <!-- radius rings (Messstege) -->
+          <g id="rings"></g>
+
+          <!-- electron beam -->
+          <path id="beam" class="beam-path" fill="none" stroke="var(--beam)" stroke-width="2.4"/>
+
+          <!-- electron gun -->
+          <g id="gun">
+            <rect x="250" y="300" width="60" height="34" rx="4" fill="#26304a" stroke="#3d4a66" stroke-width="1.5"/>
+            <rect x="272" y="296" width="16" height="10" rx="2" fill="#1a2236" stroke="#3d4a66" stroke-width="1"/>
+            <circle cx="280" cy="306" r="14" fill="url(#cathodeGlow)"/>
+            <circle cx="280" cy="306" r="3.2" fill="#ffd27a"/>
+          </g>
+
+          <!-- vordere Hälften beider Spulen (vor Glaskugel) -->
+          <!-- linke Spule, vordere Hälfte -->
+          <path d="M 200 42 A 52 168 0 0 1 200 378" fill="none" stroke="#7a2f18" stroke-width="13"/>
+          <path d="M 200 42 A 52 168 0 0 1 200 378" fill="none" stroke="url(#coilGrad)" stroke-width="9"/>
+          <path d="M 200 42 A 52 168 0 0 1 200 378" fill="none" stroke="#f0a070" stroke-width="1" stroke-dasharray="2 7" opacity="0.6"/>
+          <!-- rechte Spule, vordere Hälfte -->
+          <path d="M 360 42 A 52 168 0 0 1 360 378" fill="none" stroke="#7a2f18" stroke-width="13"/>
+          <path d="M 360 42 A 52 168 0 0 1 360 378" fill="none" stroke="url(#coilGrad)" stroke-width="9"/>
+          <path d="M 360 42 A 52 168 0 0 1 360 378" fill="none" stroke="#f0a070" stroke-width="1" stroke-dasharray="2 7" opacity="0.6"/>
+
+          <!-- Spulen-Beschriftung -->
+          <text x="200" y="34" text-anchor="middle" fill="#c0512f" font-size="10">Spule 1</text>
+          <text x="360" y="34" text-anchor="middle" fill="#c0512f" font-size="10">Spule 2</text>
+          <line x1="200" y1="392" x2="360" y2="392" stroke="#6b5a4a" stroke-width="0.8"/>
+          <text x="280" y="404" text-anchor="middle" fill="#8b7a6a" font-size="9">Abstand = Spulenradius R (Helmholtz-Bedingung)</text>
+
+          <!-- B field arrows: homogenes Feld parallel zwischen den Spulen -->
+          <g id="bfield" opacity="0.7">
+            <line x1="232" y1="130" x2="328" y2="130" stroke="var(--coil)" stroke-width="1.6" stroke-dasharray="5 4"/>
+            <polygon points="328,130 318,125 318,135" fill="var(--coil)"/>
+            <line x1="232" y1="210" x2="328" y2="210" stroke="var(--coil)" stroke-width="1.6" stroke-dasharray="5 4"/>
+            <polygon points="328,210 318,205 318,215" fill="var(--coil)"/>
+            <line x1="232" y1="290" x2="328" y2="290" stroke="var(--coil)" stroke-width="1.6" stroke-dasharray="5 4"/>
+            <polygon points="328,290 318,285 318,295" fill="var(--coil)"/>
+            <text x="280" y="204" text-anchor="middle" fill="var(--coil)" font-size="13" font-style="italic" font-family="Georgia,serif">B</text>
+          </g>
+
+          <!-- labels -->
+          <text x="280" y="350" text-anchor="middle" fill="#8b96ad" font-size="10.5">Glühkatode / Anode</text>
+
+          <!-- ===== Mess-Overlay oben links ===== -->
+          <g id="hud">
+            <rect x="12" y="12" width="168" height="150" rx="9" fill="#0c111c" fill-opacity="0.82" stroke="#2a3346" stroke-width="1"/>
+            <text x="24" y="31" fill="#8b96ad" font-size="9" letter-spacing="1.5" font-weight="600">MESSWERTE</text>
+            <line x1="24" y1="38" x2="168" y2="38" stroke="#2a3346" stroke-width="0.8"/>
+
+            <text x="24" y="55" fill="#8b96ad" font-size="11">U_B</text>
+            <text x="168" y="55" text-anchor="end" fill="#6ea8fe" font-size="12" font-weight="600" font-family="ui-monospace,Menlo,monospace"><tspan id="hud-ub">240</tspan> V</text>
+
+            <text x="24" y="73" fill="#8b96ad" font-size="11">Spulenstrom I</text>
+            <text x="168" y="73" text-anchor="end" fill="#6ea8fe" font-size="12" font-weight="600" font-family="ui-monospace,Menlo,monospace"><tspan id="hud-i">2.00</tspan> A</text>
+
+            <line x1="24" y1="82" x2="168" y2="82" stroke="#2a3346" stroke-width="0.8"/>
+            <text x="24" y="97" fill="#8b96ad" font-size="9" letter-spacing="0.5">STROM JE MESSBRÜCKE</text>
+
+            <!-- Marker für aktuell getroffenen Steg (liegt hinter dem Text) -->
+            <rect id="hud-marker" x="20" y="103" width="156" height="14" rx="3" fill="#e8b647" fill-opacity="0.14" stroke="#e8b647" stroke-opacity="0.45" stroke-width="0.8" visibility="hidden"/>
+
+            <g font-family="ui-monospace,Menlo,monospace" font-size="11">
+              <text x="24" y="113" fill="#8b7a6a"><tspan fill="#e8b647">r₁</tspan> 5 cm</text>
+              <text x="168" y="113" text-anchor="end" fill="#cdd6e6"><tspan id="hud-r1">—</tspan> A</text>
+              <text x="24" y="128" fill="#8b7a6a"><tspan fill="#e8b647">r₂</tspan> 4 cm</text>
+              <text x="168" y="128" text-anchor="end" fill="#cdd6e6"><tspan id="hud-r2">—</tspan> A</text>
+              <text x="24" y="143" fill="#8b7a6a"><tspan fill="#e8b647">r₃</tspan> 3 cm</text>
+              <text x="168" y="143" text-anchor="end" fill="#cdd6e6"><tspan id="hud-r3">—</tspan> A</text>
+              <text x="24" y="158" fill="#8b7a6a"><tspan fill="#e8b647">r₄</tspan> 2 cm</text>
+              <text x="168" y="158" text-anchor="end" fill="#cdd6e6"><tspan id="hud-r4">—</tspan> A</text>
+            </g>
+          </g>
+        </svg>
+
+        <div class="legend">
+          <span><span class="dot" style="background:var(--beam)"></span>Elektronenstrahl</span>
+          <span><span class="dot" style="background:var(--coil)"></span>Helmholtzspulen / Magnetfeld B</span>
+          <span><span class="dot" style="background:var(--gold)"></span>Messstege r₁–r₄</span>
+        </div>
+      </div>
+
+      <div class="foot">
+        Physik nach Versuchsanleitung: Beschleunigung <code>m·v²/2 = e·U_B</code>, Kreisbahn durch Lorentzkraft, Auswertung über <code>e/mₑ = 2U_B / (B²·r²)</code>. Magnetfeld der Helmholtzspulen <code>B = (8μ₀/√125)·(n/R)·I</code>. Mit n = 154 Windungen, R = 0,20 m (Schulversuch-Standardwerte; bei abweichendem Aufbau Kalibrierfaktor anpassen).
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h2>Einstellungen</h2>
+
+        <button id="autoplay" class="autobtn" aria-pressed="true">
+          <span id="auto-icon">⏸</span> <span id="auto-text">Auto-Demo läuft</span>
+        </button>
+
+        <div class="ctrl">
+          <div class="ctrl-head">
+            <span class="ctrl-label">Beschleunigungsspannung U_B</span>
+            <span class="ctrl-val"><span id="ub-val">240</span> V</span>
+          </div>
+          <input type="range" id="ub" min="200" max="400" step="5" value="240">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head">
+            <span class="ctrl-label">Spulenstrom I</span>
+            <span class="ctrl-val"><span id="i-val">2.00</span> A</span>
+          </div>
+          <input type="range" id="cur" min="0.5" max="5" step="0.05" value="2">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-label" style="margin-bottom:4px;">Zielradius (Messsteg)</div>
+          <div class="radii" id="radii">
+            <button data-r="0.05">r₁<br>5 cm</button>
+            <button data-r="0.04">r₂<br>4 cm</button>
+            <button data-r="0.03">r₃<br>3 cm</button>
+            <button data-r="0.02">r₄<br>2 cm</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.4;">
+            Stelle I so ein, dass der Strahl den gewählten Steg trifft — oder klicke einen Steg, um I automatisch zu treffen.
+          </div>
+        </div>
+      </div>
+
+      <div class="readout">
+        <div class="result-main">
+          <span class="num" id="em-val">—</span>
+          <span class="unit"> ×10¹¹ C/kg</span>
+          <div class="name">spezifische Ladung e/mₑ</div>
+        </div>
+        <div class="phase-tag" id="phase"></div>
+        <div class="rows">
+          <div class="row"><span class="k">magn. Flussdichte B</span><span class="v"><span id="b-val">—</span> mT</span></div>
+          <div class="row"><span class="k">Elektronengeschw. v</span><span class="v"><span id="v-val">—</span> ×10⁷ m/s</span></div>
+          <div class="row"><span class="k">aktueller Bahnradius</span><span class="v"><span id="r-val">—</span> cm</span></div>
+        </div>
+        <div class="dev">
+          Literaturwert: <b>1,759 ×10¹¹ C/kg</b> · Abweichung: <b id="dev-val">—</b>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // --- Konstanten ---
+  const MU0 = 4*Math.PI*1e-7;
+  const N = 154;          // Windungen pro Spule (Schulversuch-Standard)
+  const R_COIL = 0.20;    // Spulenradius [m]
+  const K = (8*MU0/Math.sqrt(125))*(N/R_COIL); // B = K * I   [T/A]
+  const E_M_LIT = 1.758820e11;
+
+  // --- SVG Geometrie ---
+  const cx = 280, cy = 306;        // Quellpunkt (Katode)
+  const PX_PER_M = 1400;           // Skalierung: 0.05 m -> 70 px Radius
+  const radii = [0.05,0.04,0.03,0.02];
+
+  // --- Elemente ---
+  const ub = document.getElementById('ub');
+  const cur = document.getElementById('cur');
+  const ubVal = document.getElementById('ub-val');
+  const iVal = document.getElementById('i-val');
+  const emVal = document.getElementById('em-val');
+  const bVal = document.getElementById('b-val');
+  const vVal = document.getElementById('v-val');
+  const rVal = document.getElementById('r-val');
+  const devVal = document.getElementById('dev-val');
+  const beam = document.getElementById('beam');
+  const ringsG = document.getElementById('rings');
+  const radiiBtns = document.querySelectorAll('#radii button');
+
+  // Messsteg-Ringe zeichnen
+  radii.forEach((r,idx)=>{
+    const rpx = r*PX_PER_M;
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    // Kreisbahn: Strahl startet bei (cx,cy) nach oben, krümmt nach rechts -> Mittelpunkt rechts
+    c.setAttribute('cx', cx + rpx);
+    c.setAttribute('cy', cy);
+    c.setAttribute('r', rpx);
+    c.setAttribute('fill','none');
+    c.setAttribute('stroke','#e8b647');
+    c.setAttribute('stroke-width','1');
+    c.setAttribute('stroke-opacity','0.28');
+    c.setAttribute('stroke-dasharray','3 5');
+    ringsG.appendChild(c);
+    // Steg-Markierung am oberen Punkt
+    const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.setAttribute('cx', cx + rpx);
+    dot.setAttribute('cy', cy - rpx);
+    dot.setAttribute('r','2.6');
+    dot.setAttribute('fill','#e8b647');
+    dot.setAttribute('fill-opacity','0.5');
+    ringsG.appendChild(dot);
+  });
+
+  function physics(U, I){
+    const B = K * I;                       // T
+    const v = Math.sqrt(2 * E_M_LIT * U);   // m/s  (mit Literaturwert für Anzeige der Bahn)
+    // tatsächlicher Bahnradius mit echtem e/m: r = m*v/(eB) = v/( (e/m)*B )
+    const r = v / (E_M_LIT * B);            // m
+    // gemessenes e/m, wenn Strahl Radius r träfe (ideal == Literaturwert hier,
+    // aber wir berechnen aus B,U,r wie im Versuch -> demonstriert Formel 6)
+    const em = (2*U) / (B*B*r*r);
+    return {B, v, r, em};
+  }
+
+  function nearestSteg(r){
+    let best=null, bd=1e9;
+    radii.forEach(rr=>{ const d=Math.abs(rr-r); if(d<bd){bd=d;best=rr;} });
+    return best;
+  }
+
+  function drawBeam(r){
+    const rpx = Math.max(2, r*PX_PER_M);
+    const mx = cx + rpx;            // Kreismittelpunkt
+    const my = cy;
+    // Strahl als Halbkreis-Bogen von Katode (cx,cy) nach oben herum.
+    // Wir zeichnen bis max. Halbkreis (Strahl trifft Wand bei großem Bogen).
+    // Endpunkt: oberster Punkt der Bahn (cx+rpx, cy-rpx) für ~Viertelkreis,
+    // hier voller sichtbarer Bogen bis zur Gegenseite.
+    const endX = cx + 2*rpx;        // gegenüberliegender Punkt
+    const endY = cy;
+    // Großer Bogen wenn er ins Glas passt, sonst gestutzt
+    const sweep = 1;
+    const largeArc = 1;
+    // Begrenze: wenn 2*rpx zu groß, zeichne Bogen nur bis er Glasrand (r=150) verlässt
+    let d;
+    if(rpx > 150){
+      // sehr großer Radius -> fast gerade Linie leicht gekrümmt nach oben
+      d = `M ${cx} ${cy} A ${rpx} ${rpx} 0 0 1 ${cx+ Math.min(140, rpx)} ${cy - Math.min(140,rpx)*0.6}`;
+    } else {
+      d = `M ${cx} ${cy} A ${rpx} ${rpx} 0 ${largeArc} ${sweep} ${endX} ${endY}`;
+    }
+    beam.setAttribute('d', d);
+  }
+
+  // HUD-Elemente
+  const hudUb     = document.getElementById('hud-ub');
+  const hudI      = document.getElementById('hud-i');
+  const hudR      = [document.getElementById('hud-r1'), document.getElementById('hud-r2'),
+                     document.getElementById('hud-r3'), document.getElementById('hud-r4')];
+  const hudMarker = document.getElementById('hud-marker');
+  // y-Positionen der vier Steg-Zeilen im SVG (müssen zu den <text y="…"> passen)
+  const hudRowY   = [103, 118, 133, 148];
+
+  function update(){
+    const U = parseFloat(ub.value);
+    const I = parseFloat(cur.value);
+    ubVal.textContent = U;
+    iVal.textContent  = I.toFixed(2);
+
+    const p = physics(U, I);
+    drawBeam(p.r);
+
+    emVal.textContent = (p.em/1e11).toFixed(3);
+    bVal.textContent  = (p.B*1000).toFixed(2);
+    vVal.textContent  = (p.v/1e7).toFixed(2);
+    rVal.textContent  = (p.r*100).toFixed(2);
+
+    const dev = (p.em - E_M_LIT)/E_M_LIT*100;
+    devVal.textContent = (dev>=0?'+':'') + dev.toFixed(1) + ' %';
+
+    // --- HUD befüllen ---
+    hudUb.textContent = U;
+    hudI.textContent  = I.toFixed(2);
+
+    // Soll-Strom je Messbrücke für aktuelle U
+    const v0 = Math.sqrt(2 * E_M_LIT * U);
+    let activeRow = -1;
+    radii.forEach((r, idx) => {
+      const Ir = v0 / (E_M_LIT * K * r);          // benötigter I für diesen Radius
+      hudR[idx].textContent = Ir.toFixed(2);
+      // Zeile hervorheben wenn aktueller Bahnradius nah an diesem Steg
+      if(Math.abs(p.r - r) < 0.003) activeRow = idx;
+    });
+
+    if(activeRow >= 0){
+      hudMarker.setAttribute('y', hudRowY[activeRow]);
+      hudMarker.setAttribute('visibility', 'visible');
+    } else {
+      hudMarker.setAttribute('visibility', 'hidden');
+    }
+
+    // Steg-Buttons markieren
+    const ns = nearestSteg(p.r);
+    radiiBtns.forEach(b=>{
+      const match = Math.abs(parseFloat(b.dataset.r)-p.r) < 0.003 && Math.abs(parseFloat(b.dataset.r)-ns)<1e-9;
+      b.classList.toggle('active', match);
+    });
+  }
+
+  // Klick auf Steg -> I so setzen dass Strahl diesen Radius trifft
+  radiiBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      stopAuto();
+      const rTarget = parseFloat(btn.dataset.r);
+      const U = parseFloat(ub.value);
+      const v = Math.sqrt(2*E_M_LIT*U);
+      const Ineeded = v/(E_M_LIT * K * rTarget);
+      cur.value = Math.min(5, Math.max(0.5, Ineeded)).toFixed(2);
+      update();
+    });
+  });
+
+  ub.addEventListener('input', ()=>{ stopAuto(); update(); });
+  cur.addEventListener('input', ()=>{ stopAuto(); update(); });
+
+  // ===== Auto-Demo =====
+  // Echter Versuchsablauf: 9 Spannungen x 4 Messstege = 36 Messpunkte.
+  // Pro Spannung: Strom wird auf r1, r2, r3, r4 eingestellt (weite Bahn zuerst).
+  // Dann erst wird die Spannung erhöht.
+  function targetCurrent(U, r){
+    const v = Math.sqrt(2*E_M_LIT*U);
+    return Math.min(5, Math.max(0.5, v/(E_M_LIT * K * r)));
+  }
+
+  const VOLTAGES  = [240,260,280,300,320,340,360,380,400];
+  const STEG_R    = [0.05, 0.04, 0.03, 0.02];
+  const STEG_NAME = ['r₁ = 5 cm','r₂ = 4 cm','r₃ = 3 cm','r₄ = 2 cm'];
+
+  const phases = [];
+  VOLTAGES.forEach(U => {
+    STEG_R.forEach((r, ri) => {
+      phases.push({
+        U,
+        I: targetCurrent(U, r),
+        label: 'U_B = ' + U + ' V — ' + STEG_NAME[ri],
+        newVoltage: ri === 0
+      });
+    });
+  });
+
+  let autoOn = true;
+  let rafId = null;
+  let phaseIdx = 0;
+  let tStart = null;
+  // Steg-Wechsel (gleiche U): schneller; Spannungs-Wechsel: langsamer + länger halten
+  const HOLD_STEG  = 1100;
+  const HOLD_VOLT  = 1700;
+  const TWEEN_STEG =  800;
+  const TWEEN_VOLT = 1300;
+  let fromU, fromI;
+
+  const btnAuto = document.getElementById('autoplay');
+  const autoIcon = document.getElementById('auto-icon');
+  const autoText = document.getElementById('auto-text');
+  const phaseTag = document.getElementById('phase');
+
+  function easeInOut(t){ return t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+
+  function step(ts){
+    if(!autoOn) return;
+    if(tStart===null){
+      tStart = ts;
+      fromU = parseFloat(ub.value);
+      fromI = parseFloat(cur.value);
+    }
+    const tgt   = phases[phaseIdx];
+    const tween = tgt.newVoltage ? TWEEN_VOLT : TWEEN_STEG;
+    const hold  = tgt.newVoltage ? HOLD_VOLT  : HOLD_STEG;
+    const total = tween + hold;
+    const elapsed = ts - tStart;
+
+    const k = elapsed < tween ? easeInOut(elapsed/tween) : 1;
+    const U = fromU + (tgt.U - fromU)*k;
+    const I = fromI + (tgt.I - fromI)*k;
+    ub.value = U.toFixed(0);
+    cur.value = I.toFixed(2);
+    update();
+
+    // Phasen-Label mit Fortschritts-Zaehler (z.B. "3 / 36")
+    const num = phaseIdx + 1;
+    const isNew = tgt.newVoltage ? '│ neue Spannung ' : '';
+    phaseTag.innerHTML =
+      '<b>' + num + ' / ' + phases.length + '</b> ' +
+      isNew + tgt.label;
+
+    if(elapsed >= total){
+      phaseIdx = (phaseIdx+1) % phases.length;
+      tStart = null;
+    }
+    rafId = requestAnimationFrame(step);
+  }
+
+  function startAuto(){
+    autoOn = true;
+    tStart = null;
+    btnAuto.classList.remove('paused');
+    btnAuto.setAttribute('aria-pressed','true');
+    autoIcon.textContent = '⏸';
+    autoText.textContent = 'Auto-Demo läuft';
+    rafId = requestAnimationFrame(step);
+  }
+  function stopAuto(){
+    autoOn = false;
+    if(rafId) cancelAnimationFrame(rafId);
+    btnAuto.classList.add('paused');
+    btnAuto.setAttribute('aria-pressed','false');
+    autoIcon.textContent = '▶';
+    autoText.textContent = 'Auto-Demo starten';
+    phaseTag.innerHTML = 'Manueller Modus — Regler & Stege frei einstellbar';
+  }
+  btnAuto.addEventListener('click', ()=>{
+    if(autoOn) stopAuto(); else startAuto();
+  });
+
+  // Respektiere reduzierte Bewegung
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  update();
+  if(reduce){
+    stopAuto();
+  } else {
+    startAuto();
+  }
+})();
+</script>
+</body>
+</html>
